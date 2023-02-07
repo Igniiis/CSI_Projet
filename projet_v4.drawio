@@ -1,6 +1,6 @@
-<mxfile host="app.diagrams.net" modified="2023-02-07T12:44:12.819Z" agent="5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36" etag="pB1TxBSbU_q68iaJtFwO" version="20.8.17" type="github">
+<mxfile host="app.diagrams.net" modified="2023-02-07T12:48:01.875Z" agent="5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36" etag="3FDQqiN4HSA2T8wGrawA" version="20.8.17" type="github">
   <diagram id="C5RBs43oDa-KdzZeNtuy" name="Page-1">
-    <mxGraphModel dx="1235" dy="1897" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+    <mxGraphModel dx="913" dy="1707" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
       <root>
         <mxCell id="WIyWlLk6GJQsqaUBKTNV-0" />
         <mxCell id="WIyWlLk6GJQsqaUBKTNV-1" parent="WIyWlLk6GJQsqaUBKTNV-0" />
@@ -18,7 +18,7 @@
         <mxCell id="n6stJM4-8zsGEMDc5PRE-1" value="id_signalement" style="text;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="IDVPyDn8LvfzWvbEVBhB-1" vertex="1">
           <mxGeometry y="26" width="160" height="26" as="geometry" />
         </mxCell>
-        <mxCell id="IDVPyDn8LvfzWvbEVBhB-5" value="problème" style="text;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rounded=0;shadow=0;html=0;" parent="IDVPyDn8LvfzWvbEVBhB-1" vertex="1">
+        <mxCell id="IDVPyDn8LvfzWvbEVBhB-5" value="problème : EnumEtat" style="text;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rounded=0;shadow=0;html=0;" parent="IDVPyDn8LvfzWvbEVBhB-1" vertex="1">
           <mxGeometry y="52" width="160" height="26" as="geometry" />
         </mxCell>
         <mxCell id="IDVPyDn8LvfzWvbEVBhB-6" value="description_problème" style="text;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rounded=0;shadow=0;html=0;" parent="IDVPyDn8LvfzWvbEVBhB-1" vertex="1">
@@ -33,7 +33,7 @@
         <mxCell id="IDVPyDn8LvfzWvbEVBhB-9" value="compteur_signalement" style="text;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="IDVPyDn8LvfzWvbEVBhB-1" vertex="1">
           <mxGeometry y="156" width="160" height="26" as="geometry" />
         </mxCell>
-        <mxCell id="IDVPyDn8LvfzWvbEVBhB-10" value="état" style="text;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="IDVPyDn8LvfzWvbEVBhB-1" vertex="1">
+        <mxCell id="IDVPyDn8LvfzWvbEVBhB-10" value="état : EnumEtat" style="text;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="IDVPyDn8LvfzWvbEVBhB-1" vertex="1">
           <mxGeometry y="182" width="160" height="26" as="geometry" />
         </mxCell>
         <mxCell id="IDVPyDn8LvfzWvbEVBhB-11" value="date_modification" style="text;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="IDVPyDn8LvfzWvbEVBhB-1" vertex="1">
