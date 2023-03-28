@@ -4,13 +4,17 @@
 
 
 ----------------------------CREATION TABLES-------------------------
-create type etat as enum('pas réalisé', 'en cours', 'réalisé');
+CREATE DOMAIN enum_etat VARCHAR(30) NOT NULL CHECK
+    (VALUE IN ('pas réalisé', 'en cours', 'réalisé'));
 
-create type type_agent as enum('normal', 'responsable');
+CREATE DOMAIN enum_agent VARCHAR(30) NOT NULL CHECK
+    (VALUE IN ('normal', 'responsable'));
 
-create type probleme as enum('panne d''éclairage public', 'chaussée abîmée', 'trottoir abîmé', 'égout bouché', 'arbre à tailler', 'voiture ventouse', 'autres');
+CREATE DOMAIN enum_etat VARCHAR(30) NOT NULL CHECK
+    (VALUE IN ('panne d''éclairage public', 'chaussée abîmée', 'trottoir abîmé', 'égout bouché', 'arbre à tailler', 'voiture ventouse', 'autres'));
 
-create type urgence as enum('faible', 'moyen', 'élevé', 'très urgent');
+CREATE DOMAIN enum_etat VARCHAR(30) NOT NULL CHECK
+    (VALUE IN ('faible', 'moyen', 'élevé', 'très urgent'));
 
 CREATE TABLE Rue (
 	id_rue SERIAL PRIMARY KEY,
@@ -22,7 +26,7 @@ CREATE TABLE AGENT (
 	id_agent SERIAL PRIMARY KEY,
 	nom_agent VARCHAR(50) NOT NULL,
 	prenom_agent VARCHAR(50) NOT NULL,
-	mdp_agent text NOT NULL,
+	mdp_agent VARCHAR(5O) NOT NULL,
 	type_agent type_agent DEFAULT 'normal'
 );
 
@@ -38,7 +42,7 @@ CREATE TABLE SIGNALEMENT (
 	date_signalement date NOT NULL,
 	compteur_signalement_total integer DEFAULT 1,
 	compteur_signalement_anonyme integer DEFAULT 0,
-	etat etat DEFAULT 'pas réalisé',
+	etat enum_etat DEFAULT 'pas réalisé',
 	date_modification date,
 	description_resolution VARCHAR(500),
 	date_resolution date,
