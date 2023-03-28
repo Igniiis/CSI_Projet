@@ -10,10 +10,10 @@ CREATE DOMAIN enum_etat VARCHAR(30) NOT NULL CHECK
 CREATE DOMAIN enum_agent VARCHAR(30) NOT NULL CHECK
     (VALUE IN ('normal', 'responsable'));
 
-CREATE DOMAIN enum_etat VARCHAR(30) NOT NULL CHECK
+CREATE DOMAIN enum_probleme VARCHAR(30) NOT NULL CHECK
     (VALUE IN ('panne d''éclairage public', 'chaussée abîmée', 'trottoir abîmé', 'égout bouché', 'arbre à tailler', 'voiture ventouse', 'autres'));
 
-CREATE DOMAIN enum_etat VARCHAR(30) NOT NULL CHECK
+CREATE DOMAIN enum_urgence VARCHAR(30) NOT NULL CHECK
     (VALUE IN ('faible', 'moyen', 'élevé', 'très urgent'));
 
 CREATE TABLE Rue (
@@ -27,18 +27,18 @@ CREATE TABLE AGENT (
 	nom_agent VARCHAR(50) NOT NULL,
 	prenom_agent VARCHAR(50) NOT NULL,
 	mdp_agent VARCHAR(5O) NOT NULL,
-	type_agent type_agent DEFAULT 'normal'
+	type_agent enum_agent DEFAULT 'normal'
 );
 
 CREATE TABLE SIGNALEMENT (
 	id_signalement SERIAL PRIMARY KEY,
-  	probleme probleme NOT NULL,
+  	probleme enum_probleme NOT NULL,
   	id_rue integer references Rue(id_rue) NOT NULL,
   	numero_maison_proche VARCHAR(10),
   	intervalle_numero_debut VARCHAR(10),
   	intervalle_numero_fin VARCHAR(10),
 	description_probleme VARCHAR(500),
-	niveau_urgence urgence DEFAULT 'faible',
+	niveau_urgence enum_urgence DEFAULT 'faible',
 	date_signalement date NOT NULL,
 	compteur_signalement_total integer DEFAULT 1,
 	compteur_signalement_anonyme integer DEFAULT 0,
