@@ -26,7 +26,7 @@ CREATE TABLE AGENT (
 	id_agent SERIAL PRIMARY KEY,
 	nom_agent VARCHAR(50) NOT NULL,
 	prenom_agent VARCHAR(50) NOT NULL,
-	mdp_agent VARCHAR(5O) NOT NULL,
+	mdp_agent VARCHAR(50) NOT NULL,
 	type_agent enum_agent DEFAULT 'normal'
 );
 
