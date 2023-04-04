@@ -107,8 +107,9 @@ class Model {
         $d = array();
         $f = array();
         
-        //dk
-        //if(isset($data->$key))unset($data->$key);
+        if(isset($data->$key) && $data->$key==''){
+            unset($data->$key);
+        }
 
         foreach ($data as $k => $v) {
             $d[":$k"] = $v;
@@ -133,5 +134,6 @@ class Model {
         if($action=='insert'){
             $this->id = $this->db->lastInsertId();
         }
+        return $action;
     }
 }

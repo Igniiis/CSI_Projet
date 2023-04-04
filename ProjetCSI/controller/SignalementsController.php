@@ -50,8 +50,11 @@ class SignalementsController extends Controller{
         $d['id'] = '';
 
         if($this->request->data){
-            $this->Signalement->save($this->request->data);
-            $this->Session->setFlash("Le contenu a bien été modifié {$id}");
+            if($this->Signalement->save($this->request->data)=='insert'){
+                $this->Session->setFlash("Le contenu a bien été créé à l'id {$id}");                
+            }else{
+                $this->Session->setFlash("Le contenu a bien été modifié (id:{$id})");
+            }
             $id = $this->Signalement->id;
         }
 

@@ -6,10 +6,9 @@
 </div>
 
 <div>
-    <p><?php if(isset($name)){
-        echo $name;
-    }else{
-            echo 'bienvenue ';
+    <p>Bienvenue 
+    <?php if(isset($name)){
+        echo ' '.$name.'';
     }?>
     sur le site du projet de CSI de l'année 2022-2023</p>
 

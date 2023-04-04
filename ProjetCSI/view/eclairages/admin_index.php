@@ -3,8 +3,8 @@
 <h2>Faire une demande d'éclairage</h2>
 
 <form action="<?php echo BASE_URL.'/eclairages'.$id ;?>" method="post">
-    <label for="id_rue_habitant">Rue :</label>
-    <select id="selectRue" name="id_rue_habitant" required>
+    <label for="id_rue">Rue :</label>
+    <select id="selectRue" name="id_rue" required>
         <?php foreach($rues as $r): ?>
             <option value="<?php echo $r->id_rue;?>" type="number"><?php echo $r->nom_rue;?></option>
         <?php endforeach; ?>
@@ -38,8 +38,6 @@
         }
 
 	</style>
-    
-
 
     <div id="eclairages_stat">
 

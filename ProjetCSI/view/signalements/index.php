@@ -56,13 +56,13 @@
 					<div id="corpsCoord" style="display: none;">
 						
 						<label for="nom_habitant">Nom</label>
-						<input id="nom_h" type="text" name="nom_habitant" value=" " required>
+						<input id="nom_h" type="text" name="nom_habitant" value="">
 						
 						<label for="prenom_habitant">Prenom</label>
-						<input id="prenom_h" type="text" name="prenom_habitant" value=" " required>
+						<input id="prenom_h" type="text" name="prenom_habitant" value="">
 
 						<label for="mail">Adresse email</label>
-						<input id="mail_h" type="email" name="mail" value=" " required>
+						<input id="mail_h" type="email" name="mail" value="">
 
 						<label for="num_adresse_habitant">Adresse :</label>
 						<?php echo $this->Form->input('num_adresse_habitant','numéro') ?>
@@ -90,15 +90,15 @@ function afficheCoord() {
 	if (a.checked) {
 		//on affiche la partie coordonnée
 		document.getElementById('corpsCoord').style.display = 'block';
-		document.getElementById('nom_h').value = null;
-		document.getElementById('prenom_h').value = null;
-		document.getElementById('mail_h').value = null;
+		document.getElementById('nom_h').required = true;
+		document.getElementById('prenom_h').required = true;
+		document.getElementById('mail_h').required = true;
 		}else{
 		//on supprime la partie coordonnée
 		document.getElementById('corpsCoord').style.display = 'none';
-		document.getElementById('nom_h').value=" ";
-		document.getElementById('prenom_h').value=" ";
-		document.getElementById('mail_h').value=" ";
+		document.getElementById('nom_h').required = false;
+		document.getElementById('prenom_h').required = false;
+		document.getElementById('mail_h').required = false;
 	}
 }
 		</script>
