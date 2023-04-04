@@ -18,8 +18,6 @@ class Controller{
             $this->request = $request;
         }
         require ROOT.DS.'config'.DS.'hook.php';
-
-
     }
 
     public function render($view){
