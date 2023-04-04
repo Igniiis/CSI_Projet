@@ -49,7 +49,7 @@ CREATE TABLE SIGNALEMENT (
 	compteur_signalement_total integer DEFAULT 1,
 	compteur_signalement_anonyme integer DEFAULT 0,
 	etat enum_etat DEFAULT 'pas réalisé',
-	date_modification current_date,
+	date_modification DATE not null default current_date,
 	description_resolution VARCHAR(500),
 	date_modification DATE not null default CURRENT_DATE,
 	id_agent integer references AGENT(id_agent)
