@@ -1,12 +1,12 @@
 ----------------------------EFFACER BASE---------------------------
 
-drop table Rue;
-drop table Agent;
-drop table signalement;
-drop table habitant;
-drop table eclairage;
-drop table signalement;
-drop table signalement_habitant;
+drop table if exists Rue;
+drop table if exists Agent;
+drop table if exists signalement;
+drop table if exists habitant;
+drop table if exists eclairage;
+drop table if exists signalement;
+drop table if exists signalement_habitant;
 
 ----------------------------CREATION TABLES-------------------------
 CREATE DOMAIN enum_etat VARCHAR(30) NOT NULL CHECK
@@ -77,6 +77,9 @@ CREATE TABLE SIGNALEMENT_HABITANT (
 	id_signalement integer references SIGNALEMENT(id_signalement),
 	id_habitant integer references HABITANT(id_habitant)
 );
+
+ALTER TABLE SIGNALEMENT_HABITANT ADD CONSTRAINT PK PRIMARY KEY (id_signalement, idhabitant);
+	
 
 
 --Contrainte 1
