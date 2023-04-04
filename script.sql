@@ -217,21 +217,20 @@ CREATE OR REPLACE PROCEDURE proc_insert_habitant_signalement
 (id_sig integer, nom_h VARCHAR(50),prenom_h VARCHAR(50),id_r integer, num_adresse_h VARCHAR(10), numero_p VARCHAR(25), numero_f VARCHAR(25), mail_h VARCHAR(100))
 AS $$
 DECLARE
-    t integer;
+    nb integer;
 BEGIN
-    SELECT COUNT(*) INTO t FROM Habitant WHERE Habitant.nom=nom_h AND Habitant.prenom=prenom_h AND Habitant.mail=mail_h AND Habitant.id_rue=id_r;
+    SELECT COUNT(*) INTO nb FROM Habitant WHERE Habitant.nom_habitant=nom_h AND Habitant.prenom_habitant=prenom_h AND Habitant.mail=mail_h AND Habitant.id_rue=id_r;
     
-    IF(t==0) --Si on a pas de ligne avec toutes les coordonnées identiques, cela signifit que l'on a jamais ajouté cet habitant
+    IF(nb=0) --Si on a pas de ligne avec toutes les coordonnées identiques, cela signifit que l'on a jamais ajouté cet habitant
     THEN -- alors on insert les valeur de l'habitant en parametre
-        INSERT INTO habitant (nom_habitant, prenom_habitant, id_rue, num_adresse_habitant, numero_portable, numero_fixe, mail) 
-        VALUES (nom_h, prenom_h, id_r, num_adresse_h, numero_p, numero_f, mail_h);
+        INSERT INTO habitant (nom_habitant, prenom_habitant, id_rue, num_adresse_habitant, numero_portable, numero_fixe, mail) VALUES (nom_h, prenom_h, id_r, num_adresse_h, numero_p, numero_f, mail_h);
     END IF;
     
     --on récupère l'id de l'habitant concerné
-    SELECT id_habitant INTO t FROM Habitant WHERE Habitant.nom=nom_h AND Habitant.prenom=prenom_h AND Habitant.mail=mail_h AND Habitant.id_rue=id_r;
+    SELECT id_habitant INTO nb FROM Habitant WHERE Habitant.nom_habitant=nom_h AND Habitant.prenom_habitant=prenom_h AND Habitant.mail=mail_h AND Habitant.id_rue=id_r;
         
     --et on insert dans la table de liaison les 2 ids
-    INTO signalement_habitant (id_signalement, id_habitant) VALUES (id_sig,t);
+    INSERT INTO signalement_habitant (id_signalement, id_habitant) VALUES (id_sig,nb);
 END
 $$ LANGUAGE PLPGSQL
 
