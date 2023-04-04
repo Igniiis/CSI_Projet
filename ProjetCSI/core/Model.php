@@ -45,9 +45,6 @@ class Model {
     }
 
     public function find($req){
-
-
-
         //les champs à récupérer
         $fields = '*';
         if(isset($req['fields'])){
@@ -77,8 +74,6 @@ class Model {
                 $sql .= implode(' AND ', $cond);
             }
         }
-
-        print_r($sql);
 
         $pre = $this->db->prepare($sql);
         $pre->execute();
@@ -111,23 +106,25 @@ class Model {
         $fields = array();
         $d = array();
         $f = array();
-        if(isset($data->$key)){
-            unset($data->$key);
-        }
+        
+        //dk
+        //if(isset($data->$key))unset($data->$key);
+
         foreach ($data as $k => $v) {
             $d[":$k"] = $v;
 
             $f[] = $k;
-            $fields[] = ':'.$k;
+            $fieldsInsert[] = ':'.$k;
+            $fieldsUpdate[] = $k .'=:'.$k;
         }
 
         if(isset($data->$key) && !empty($data->$key)){
-            $sql = 'UPDATE '.$this->table.' SET '.implode(',',$fields).' WHERE '.$key.'=:'.$key;
+            $sql = 'UPDATE '.$this->table.' SET '.implode(', ',$fieldsUpdate).' WHERE '.$key.'=:'.$key;
             $this->id = $data->$key;
             $action = 'update';
         }else{
             if(isset($data->$key)) unset($data->$key);
-            $sql = 'INSERT INTO '.$this->table.'( '.implode(', ',$f).' ) VALUES ('.implode(', ',$fields).')';
+            $sql = 'INSERT INTO '.$this->table.'( '.implode(', ',$f).' ) VALUES ('.implode(', ',$fieldsInsert).')';
             $action = 'insert';
         }
 

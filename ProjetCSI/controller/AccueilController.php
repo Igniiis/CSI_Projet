@@ -3,17 +3,19 @@
 class AccueilController extends Controller{
 
 
-    function view($id){
+    function index(){
 
-        echo 'flop';
+        $this->render('/accueil');
     }
 
-    function index(){
+    function succes(){
+        $this->Session->setFlash("Signalement envoyé.");
         $this->render('/accueil');
     }
 
     function admin_index(){
-        $this->index();
+        $d['name'] = $this->request->data;
+        $this->render('/accueil');
     }
 
 

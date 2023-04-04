@@ -1,3 +1,4 @@
+<link rel="stylesheet" href="<?php echo BASE_URL;?>/css/form.css" />
 <div>
 	<h1>Zone réservé</h1>
 	<form action="<?php echo BASE_URL.'/agents/login';?>" method="post">
@@ -12,17 +13,4 @@
 			<input type="submit" class="btn primary" value="Se connecter">
 		</div>
 	</form>
-
-
 </div>
-
-
-
-
-<!-- <h2>Connexion</h2><br>
-			<form action=".php" method="post">
-
-				<?php if (isset($messageErreurConnexion)): ?>
-					<p id="MsgErreurConnexion"><?php echo $messageErreurConnexion; ?></p>
-				<?php endif; ?>
-			</form> -->

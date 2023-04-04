@@ -1,11 +1,13 @@
-/*La topbar */
+/* Tipo */
 body {
-    margin: 0;
-    font-family: Arial, Helvetica, sans-serif;
-  }
-  
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+}
 
-  
+
+
+
+/*La topbar */
   .topnav .clickable {
     float: left;
     color: #f2f2f2;
@@ -25,6 +27,7 @@ body {
     background-color: #04AA6D;
     color: white;
   }
+
   
   
   /* On s'occupe des tableaux */
@@ -66,6 +69,7 @@ body {
       color: #009879;
   }
   
+
   /* Pour le flash */
   
   .alert-message { 
@@ -88,3 +92,59 @@ body {
       opacity: 1;
     }
   }
+
+
+  /* pour les boutons */
+.button-3 {
+
+  margin-top: 30px;
+  margin-left: 40px;
+
+  appearance: none;
+  background-color: #FB5592;
+  border: 1px solid rgba(27, 31, 35, .15);
+  border-radius: 6px;
+  box-sizing: border-box;
+  color: #fff;
+  cursor: pointer;
+  display: inline-block;
+  font-family: -apple-system,system-ui,"Segoe UI",Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji";
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+  padding: 6px 16px;
+  position: relative;
+  text-align: center;
+  text-decoration: none;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.button-3:focus:not(:focus-visible):not(.focus-visible) {
+  box-shadow: none;
+  outline: none;
+}
+
+.button-3:hover {
+  background-color: #ff85b2;
+}
+
+.button-3:focus {
+  box-shadow: rgba(255, 174, 213, 0.4) 0 0 0 3px;
+  outline: none;
+}
+
+.button-3:disabled {
+  background-color: #c96388;
+  border-color: rgba(27, 31, 35, .1);
+  color: rgba(255, 255, 255, .8);
+  cursor: default;
+}
+
+.button-3:active {
+  background-color: #ff85b2;
+  box-shadow: rgba(70, 20, 48, 0.2) 0 1px 0 inset;
+}

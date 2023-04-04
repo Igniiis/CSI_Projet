@@ -1,3 +1,4 @@
+<link rel="stylesheet" href="<?php echo BASE_URL;?>/css/form.css" />
 <div>
 	<h1><?php
 		if ($id == ''){
@@ -12,7 +13,7 @@
 	
 	<?php echo $this->Form->input('id_signalement',null,array('type' => 'hidden')) ?>
 	<?php echo $this->Form->input('probleme','Titre',array('type' => 'select', 'options'=>array(
-		"Panne d'éclairage public","chaussée abîmée","trottoir abîmé","égout bouché","arbre à tailler","voiture ventouse","autres"
+		"panne d'éclairage public", 'chaussée abîmée', 'trottoir abîmé', 'égout bouché', 'arbre à tailler', 'voiture ventouse', 'autres'
 	)));?>
 	<?php echo $this->Form->input('description_probleme','description autre', array('type' => 'textarea'))?>
 	

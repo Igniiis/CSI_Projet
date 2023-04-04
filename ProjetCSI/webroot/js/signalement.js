@@ -18,16 +18,16 @@ function affichageNumero(param)
     switch (param) {
         case 'num':
             htmlAdd = '<label for="numero_maison_proche">Numéro de maison proche :</label>\n'
-                     +'<input type="number" name="numero_maison_proche" required  min="1" step="1">';
+                     +'<input class="nombres" type="text" name="numero_maison_proche" required>';
             break;
     
         case 'intervalle':
             htmlAdd = '<div class="boutonsBloc">\n'
 								+'<label for="intervalle_numero_debut">Intervalle numéro début :</label>\n'
-								+'<input type="number" name="intervalle_numero_debut" required min="1" step="1"><br>\n'
+								+'<input class="nombres" type="text" name="intervalle_numero_debut" required><br>\n'
 
 								+'<label for="intervalle_numero_fin">Intervalle numéro fin :</label>\n'
-								+'<input type="number" name="intervalle_numero_fin" required min="1" step="1"><br>\n'
+								+'<input class="nombres" type="text" name="intervalle_numero_fin" required ><br>\n'
 							+'</div>';
                         
             break;
@@ -37,10 +37,4 @@ function affichageNumero(param)
     }
 
     numeros.innerHTML = htmlAdd;
-}
-
-
-function afficheCoord()
-{
-    console.log('test');
 }

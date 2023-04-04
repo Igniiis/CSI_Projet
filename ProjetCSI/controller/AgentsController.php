@@ -13,10 +13,10 @@ class AgentsController extends Controller{
 
             //si c'est bien un agent de la bdd
             if(!empty($agent)){
+                //on ajoute l'agent à la session
                 $this->Session->write('Agent',$agent);                
             }
 
-            print_r($agent);
             $this->request->data->password = '';
         }
 

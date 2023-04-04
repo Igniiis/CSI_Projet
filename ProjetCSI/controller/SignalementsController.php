@@ -9,17 +9,13 @@ class SignalementsController extends Controller{
 
         if($this->request->data){
             if($this->insertion_complète()){
-                $this->redirect('accueil');
+                $this->redirect('accueil/succes');
             }
-            $this->Session->setFlash("Signalement envoyé.");
         }
 
 
-        $file = ROOT.DS.'model'.DS.'Rue'.'.php';
-        require_once($file);
-        if(!isset($this->Rue)){
-            $this->Rue = new Rue();
-        }
+        $this->loadModel('rue');
+        $this->Rue = new Rue();
         
         $d['rues'] = $this->Rue->find(array());
         $this->set($d);
@@ -37,7 +33,7 @@ class SignalementsController extends Controller{
         $this->Signalement = new Signalement();
 
         $d['signalements'] = $this->Signalement->find(array(
-            'fields' =>'id_signalement,probleme,numero_maison_proche,intervalle_numero_debut,intervalle_numero_fin,description_probleme,niveau_urgence,date_signalement,compteur_signalement_total,etat,nom_rue',
+            'fields' =>'id_signalement,probleme,numero_maison_proche,intervalle_numero_debut,intervalle_numero_fin,description_probleme,niveau_urgence,date_signalement,compteur_signalement_total,compteur_signalement_anonyme,etat,nom_rue,date_resolution,date_modification',
             'joins' => 'INNER JOIN rue ON Signalement.id_rue=rue.id_rue '
         ));
 
@@ -99,38 +95,19 @@ class SignalementsController extends Controller{
 
 
     private function insertion_complète(){
-
         $data = $this->request->data;
-
         $sig = array();
         $coo = array();
         
         unset($data->drone);
         if(isset($data->checking)){ //si on a signalement ainsi que des coordonnées
-            $c[] = 'nom_habitant';
-            $c[] = 'prenom_habitant';
-            $c[] = 'num_adresse_habitant';
-            $c[] = 'id_rue';
-            $c[] = 'numero_portable';
-            $c[] = 'numero_fixe';
-            $c[] = 'mail';
-
-            $fieldsCoo[] = 'nom_habitant';
-            $fieldsCoo[] = 'prenom_habitant';
-            $fieldsCoo[] = 'num_adresse_habitant';
-            $fieldsCoo[] = 'id_rue';
-            $fieldsCoo[] = 'numero_portable';
-            $fieldsCoo[] = 'numero_fixe';
-            $fieldsCoo[] = 'mail';
-
-
-            $coo[':nom_habitant'] = $data->nom_habitant;
-            $coo[':prenom_habitant'] = $data->prenom_habitant;
-            $coo[':num_adresse_habitant'] = $data->num_adresse_habitant;
-            $coo[':id_rue'] = $data->id_rue_habitant;
-            $coo[':numero_portable'] = $data->numero_portable;
-            $coo[':numero_fixe'] = $data->numero_fixe;
-            $coo[':mail'] = $data->mail;
+            $coo[':nom_h'] = trim(strtolower($data->nom_habitant));
+            $coo[':prenom_h'] = trim(strtolower($data->prenom_habitant));
+            $coo[':num_adresse_h'] = trim(strtolower($data->num_adresse_habitant));
+            $coo[':id_r'] = trim(strtolower($data->id_rue_habitant));
+            $coo[':numero_p'] = trim(strtolower($data->numero_portable));
+            $coo[':numero_f'] = trim(strtolower($data->numero_fixe));
+            $coo[':mail_h'] = trim(strtolower($data->mail));
             
             unset($data->checking);
         }
@@ -155,20 +132,11 @@ class SignalementsController extends Controller{
         $pre->execute($sig);
 
         if(!empty($coo)){//si on n'envoi pas qu'un signalement
-            $idS = $this->Signalement->db->lastInsertId();
-
-            $sql = 'INSERT INTO Habitant ( '.implode(', ',$c).' ) VALUES ('.implode(', ', $fieldsCoo).')';
+            $coo[':id_sig'] = $this->Signalement->db->lastInsertId();
+            $sql = 'CALL proc_insert_habitant_signalement(:id_sig, :nom_h, :prenom_h, :id_r, :num_adresse_h, :numero_p, :numero_f, :mail_h)';
+        
             $pre = $this->Signalement->db->prepare($sql);
             $pre->execute($coo);
-            $idC = $this->Signalement->db->lastInsertId();
-
-            //A VERIF
-            $sql = 'INSERT INTO Signalement_habitant VALUES (id_signalement,id_habitant) VALUES (:id_s,:id_c)';
-            $pre = $this->Signalement->db->prepare($sql);
-            $pre->execute(array(
-                ':id_s' => $idS,
-                ':id_c' => $idC
-            ));
         }
 
         return true;

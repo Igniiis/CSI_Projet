@@ -1,3 +1,5 @@
+<link rel="stylesheet" href="<?php echo BASE_URL;?>/css/form.css" />
+
 <div id="formulaire_CreerSignalement" class="formulaire">
 			<h2>Créer un signalement</h2><br>
 			<form action="<?php echo BASE_URL.'/signalements';?>" method="post">
@@ -30,16 +32,16 @@
 
 						<div>
 							<input type="radio" id="radio_num" onchange="affichageNumero('num');" name="drone" checked>
-							<label for="huey">numero de maison</label>
+							numero de maison
 						</div>
 						<div>
 							<input type="radio" id="radio_intervalle" onchange="affichageNumero('intervalle');" name="drone" >
-							<label for="intervalle">intervalle</label>
+							intervalle
 						</div>
 						<!-- Par défaut c'est l'affichage pour le numéro de la maison proche, mais ca change grace au radio button -->
 						<div id="numeros">
 							<label for="numero_maison_proche">Numéro de maison proche :</label>
-							<input type="number" name="numero_maison_proche" required  min="1" step="1">
+							<input class="nombres" type="text" name="numero_maison_proche" required>
 						</div>
 
 					</div>
@@ -52,9 +54,17 @@
 					<input type="checkbox" id="checkin" onclick="afficheCoord();" name="checking">
 					
 					<div id="corpsCoord" style="display: none;">
-						<?php echo $this->Form->input('nom_habitant','nom') ?>
-						<?php echo $this->Form->input('prenom_habitant','prenom') ?>
-						<label for="num_adresse_habitant">Adresse</label>
+						
+						<label for="nom_habitant">Nom</label>
+						<input id="nom_h" type="text" name="nom_habitant" value=" " required>
+						
+						<label for="prenom_habitant">Prenom</label>
+						<input id="prenom_h" type="text" name="prenom_habitant" value=" " required>
+
+						<label for="mail">Adresse email</label>
+						<input id="mail_h" type="email" name="mail" value=" " required>
+
+						<label for="num_adresse_habitant">Adresse :</label>
 						<?php echo $this->Form->input('num_adresse_habitant','numéro') ?>
 						<label for="id_rue_habitant">Rue :</label>
 						<select id="selectRue" name="id_rue_habitant" required>
@@ -65,7 +75,6 @@
 							
 						<?php echo $this->Form->input('numero_portable','numéro de tel. portable') ?>
 						<?php echo $this->Form->input('numero_fixe','numéro de tel. fixe') ?>
-						<?php echo $this->Form->input('mail','adresse email') ?>
 					</div>
 				</div>
 				<br>
@@ -77,12 +86,19 @@
 		<script>
 function afficheCoord() {
     let a = document.getElementById('checkin');
+
 	if (a.checked) {
 		//on affiche la partie coordonnée
 		document.getElementById('corpsCoord').style.display = 'block';
+		document.getElementById('nom_h').value = null;
+		document.getElementById('prenom_h').value = null;
+		document.getElementById('mail_h').value = null;
 		}else{
 		//on supprime la partie coordonnée
 		document.getElementById('corpsCoord').style.display = 'none';
+		document.getElementById('nom_h').value=" ";
+		document.getElementById('prenom_h').value=" ";
+		document.getElementById('mail_h').value=" ";
 	}
 }
 		</script>
