@@ -74,8 +74,8 @@ CREATE TABLE ECLAIRAGE (
 );
 
 CREATE TABLE SIGNALEMENT_HABITANT (
-	id_signalement integer NOT NULL references SIGNALEMENT(id_signalement),
-	id_habitant integer NOT NULL references HABITANT(id_habitant)
+	id_signalement integer references SIGNALEMENT(id_signalement),
+	id_habitant integer references HABITANT(id_habitant)
 );
 
 ALTER TABLE SIGNALEMENT_HABITANT ADD CONSTRAINT PK PRIMARY KEY (id_signalement, idhabitant);
