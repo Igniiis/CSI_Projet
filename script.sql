@@ -1,5 +1,4 @@
 ----------------------------EFFACER BASE---------------------------
-
 drop table if exists signalement_habitant;
 drop table if exists habitant;
 drop table if exists eclairage;
