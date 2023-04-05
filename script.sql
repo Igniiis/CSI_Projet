@@ -55,6 +55,7 @@ CREATE TABLE SIGNALEMENT (
 	compteur_signalement_anonyme integer DEFAULT 0,
 	etat enum_etat DEFAULT 'pas réalisé',
 	description_resolution VARCHAR(500),
+	date_resolution DATE,
 	date_modification DATE not null default CURRENT_DATE,
 	id_agent VARCHAR(50) references AGENT(id_agent)
 );
@@ -87,10 +88,8 @@ CREATE TABLE SIGNALEMENT_HABITANT (
 
 ---------------------------- CREATION CONTRAINTES -------------------------
 
-
 --Ajouter la double clé primaire pour la table
 ALTER TABLE SIGNALEMENT_HABITANT ADD CONSTRAINT PK PRIMARY KEY (id_signalement, id_habitant);
-
 
 /*Cette contrainte utilise une fonction plpgsql et un trigger pour incrémente le compteur du signalement originel si un nouveau signalement est identique au précédent
  * La comparaison des signalements est basée sur les valeurs des colonnes probleme, numero_maison_proche, intervalle_numero_debut, intervalle_numero_fin, description_probleme et niveau_urgence. Si les deux signalements sont identiques
