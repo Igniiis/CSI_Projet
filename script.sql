@@ -92,31 +92,32 @@ CREATE TABLE SIGNALEMENT_HABITANT (
 --Ajouter la double clé primaire pour la table
 ALTER TABLE SIGNALEMENT_HABITANT ADD CONSTRAINT PK PRIMARY KEY (id_signalement, id_habitant);
 
+
+
 /*Cette contrainte utilise une fonction plpgsql et un trigger pour incrémente le compteur du signalement originel si un nouveau signalement est identique au précédent
  * La comparaison des signalements est basée sur les valeurs des colonnes probleme, numero_maison_proche, intervalle_numero_debut, intervalle_numero_fin, description_probleme et niveau_urgence. Si les deux signalements sont identiques
  * la fonction met à jour le compteur du signalement originel et annule l'insertion du nouveau signalement*/
 CREATE OR REPLACE FUNCTION increment_compteur_signalement()
 RETURNS TRIGGER AS $$
 DECLARE
-	last_signalement INTEGER;
     t INTEGER;
 BEGIN
 
-	SELECT count(*) INTO t FROM Signalement WHERE
+	SELECT id_signalement INTO t FROM Signalement WHERE
     SIGNALEMENT.probleme=NEW.probleme AND
     SIGNALEMENT.id_rue = NEW.id_rue AND
-    SIGNALEMENT.numero_maison_proche = NEW.numero_maison_proche AND
-    SIGNALEMENT.intervalle_numero_debut = NEW.intervalle_numero_debut AND
-    SIGNALEMENT.intervalle_numero_fin = NEW.intervalle_numero_fin;
+    ((SIGNALEMENT.numero_maison_proche = NEW.numero_maison_proche) OR
+    (SIGNALEMENT.intervalle_numero_debut = NEW.intervalle_numero_debut AND
+    SIGNALEMENT.intervalle_numero_fin = NEW.intervalle_numero_fin));
 
 
 	-- Si le dernier signalement est identique au nouveau, on incrémente le compteur
-	IF (t=1)
+	IF (t IS NOT NULL)
 		THEN
 	    	UPDATE signalement
-	    	SET compteur_signalement_total = (SELECT compteur_signalement_total FROM signalement WHERE id_signalement = last_signalement) + 1,
-	    	    compteur_signalement_anonyme = (SELECT compteur_signalement_total FROM signalement WHERE id_signalement = last_signalement) + NEW.compteur_signalement_anonyme
-	    	WHERE id_signalement = last_signalement;
+	    	SET compteur_signalement_total = (SELECT compteur_signalement_total+1 FROM signalement WHERE id_signalement = t),
+	    	    compteur_signalement_anonyme = ((SELECT compteur_signalement_anonyme FROM signalement WHERE id_signalement = t) + NEW.compteur_signalement_anonyme)
+	    	WHERE id_signalement = t;
 	    	RETURN NULL; -- On annule l'insertion du nouveau signalement
 	END IF;
 	RETURN NEW;
@@ -128,58 +129,38 @@ CREATE TRIGGER increment_compteur_signalement_trigger
   	FOR EACH ROW
   	EXECUTE FUNCTION increment_compteur_signalement();
 
-
-
- /*Cette contrainte permet d'incrémeter le niveau d'urgence en fonction du nombre qu'affiche le compteur.*/
- CREATE OR REPLACE FUNCTION increment_urgence() RETURNS TRIGGER AS $$
-DECLARE
-    nb_compteur INTEGER;
-    max_id INTEGER;
-BEGIN
-
-    --on récupère le nouveau compteur total
-    SELECT compteur_signalement_total INTO nb_compteur FROM SIGNALEMENT WHERE id_signalement=NEW.id_signalement;
-
-    --    (VALUE IN ('faible', 'moyen', 'élevé', 'très urgent'));
-    IF(nb_compteur<=9)
-    then
-        UPDATE SIGNALEMENT SET niveau_urgence='faible' WHERE SIGNALEMENT.id_signalement=NEW.id_signalement;
-    elseif (nb_compteur <= 19)
-    then
-        UPDATE SIGNALEMENT SET niveau_urgence='moyen' WHERE SIGNALEMENT.id_signalement=NEW.id_signalement;
-    elseif (nb_compteur <= 29)
-    then
-        UPDATE SIGNALEMENT SET niveau_urgence='élevé' WHERE SIGNALEMENT.id_signalement=NEW.id_signalement;
-    elseif (nb_compteur >= 30)
-    then
-        UPDATE SIGNALEMENT SET niveau_urgence='très urgent' WHERE SIGNALEMENT.id_signalement=NEW.id_signalement;
-    else
-        --erreur
-        RETURN NULL;
-    end if;
-
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE TRIGGER increment_urgence_trigger
-	AFTER UPDATE ON signalement
-	FOR EACH ROW
-	EXECUTE FUNCTION increment_urgence();
-
-
-
 /* Cette procédure permet à un utilisateur de faire fusionner 2 signalements qu'il trouve similaire*/
 CREATE OR REPLACE PROCEDURE fusion_signalement(id_disparant integer, id_recuperant integer)
 AS $$
 DECLARE
-
+    nb_total integer;
+    nb_ano integer;
 BEGIN
-
+    nb_total := (SELECT compteur_signalement_total FROM SIGNALEMENT WHERE id_signalement=id_disparant) + (SELECT compteur_signalement_total FROM SIGNALEMENT WHERE id_signalement=id_recuperant);
+    nb_ano := (SELECT compteur_signalement_anonyme FROM SIGNALEMENT WHERE id_signalement=id_disparant) + (SELECT compteur_signalement_anonyme FROM SIGNALEMENT WHERE id_signalement=id_recuperant);
     -- on rajoute au signalement récupérant les valeurs de compteur du signalement disparant
-    UPDATE SIGNALEMENT SET compteur_signalement_total=(SELECT compteur_signalement_total FROM SIGNALEMENT WHERE id_signalement=id_disparant) + (SELECT compteur_signalement_total FROM SIGNALEMENT WHERE id_signalement=id_recuperant),
-    compteur_signalement_anonyme=(SELECT compteur_signalement_anonyme FROM SIGNALEMENT WHERE id_signalement=id_disparant) + (SELECT compteur_signalement_anonyme FROM SIGNALEMENT WHERE id_signalement=id_recuperant)
+    UPDATE SIGNALEMENT SET compteur_signalement_total= nb_total,
+    compteur_signalement_anonyme=nb_ano
     WHERE id_signalement=id_recuperant;
+
+    IF(nb_total<=9)
+    then
+        UPDATE SIGNALEMENT SET niveau_urgence='faible' WHERE SIGNALEMENT.id_signalement=id_recuperant;
+    elseif (nb_total <= 19)
+    then
+        UPDATE SIGNALEMENT SET niveau_urgence='moyen' WHERE SIGNALEMENT.id_signalement=id_recuperant;
+    elseif (nb_total <= 29)
+    then
+        UPDATE SIGNALEMENT SET niveau_urgence='élevé' WHERE SIGNALEMENT.id_signalement=id_recuperant;
+    elseif (nb_total >= 30)
+    then
+        UPDATE SIGNALEMENT SET niveau_urgence='très urgent' WHERE SIGNALEMENT.id_signalement=id_recuperant;
+    else
+        --erreur
+    end if;
+
+    --on change les liens entre habitant et signalement
+    UPDATE SIGNALEMENT_HABITANT SET id_signalement=id_recuperant WHERE SIGNALEMENT_HABITANT.id_signalement=id_disparant;
 
     -- on supprime maintenant ce signalement qui n'a plus d'utilité
     DELETE FROM SIGNALEMENT WHERE id_signalement=id_disparant;
