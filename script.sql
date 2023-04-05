@@ -5,7 +5,6 @@ drop table if exists Agent;
 drop table if exists signalement;
 drop table if exists habitant;
 drop table if exists eclairage;
-drop table if exists signalement;
 drop table if exists signalement_habitant;
 
 ----------------------------CREATION TABLES-------------------------
@@ -49,7 +48,6 @@ CREATE TABLE SIGNALEMENT (
 	compteur_signalement_total integer DEFAULT 1,
 	compteur_signalement_anonyme integer DEFAULT 0,
 	etat enum_etat DEFAULT 'pas réalisé',
-	date_modification DATE not null default current_date,
 	description_resolution VARCHAR(500),
 	date_modification DATE not null default CURRENT_DATE,
 	id_agent integer references AGENT(id_agent)
@@ -78,7 +76,7 @@ CREATE TABLE SIGNALEMENT_HABITANT (
 	id_habitant integer references HABITANT(id_habitant)
 );
 
-ALTER TABLE SIGNALEMENT_HABITANT ADD CONSTRAINT PK PRIMARY KEY (id_signalement, idhabitant);
+ALTER TABLE SIGNALEMENT_HABITANT ADD CONSTRAINT PK PRIMARY KEY (id_signalement, id_habitant);
 	
 
 
@@ -86,7 +84,7 @@ ALTER TABLE SIGNALEMENT_HABITANT ADD CONSTRAINT PK PRIMARY KEY (id_signalement, 
 /*Cette contrainte s'assure que chaque signalement a bien une valeur pour les colonnes "probleme", "niveau_urgence" et "date_signalement"
  * Si l'une de ces colonnes est manquante, l'insertion ou la mise à jour sera refusée.*/
 
-ALTER TABLE SIGNALEMENT ADD CONSTRAINT contrainte_signalement 
+ALTER TABLE SIGNALEMENT ADD CONSTRAINT contrainte_signalement
 CHECK (probleme IS NOT NULL AND niveau_urgence IS NOT NULL AND date_signalement IS NOT NULL);
 
 --Contrainte 2
@@ -151,33 +149,33 @@ FOR EACH ROW
 EXECUTE FUNCTION increment_urgence();
 
 --Contrainte 4
-/*Ce déclencheur s'exécute après chaque mise à jour de la table "signalements" où le champ "principal_id" est défini
+/*Ce déclencheur s'exécute après chaque mise à jour de la table "signalement" où le champ "principal_id" est défini
  * Il compare le signalement mis à jour (NEW) avec celui référencé par "principal_id" (OLD) et s'il sont identiques, il incrémente le compteur du signalement principal et supprime le signalement secondaire
  * La mise à jour du signalement principal et la suppression du secondaire sont effectuées dans une transaction
  * ce qui garantit que les deux opérations réussissent ou échouent ensemble*/
 
-CREATE OR REPLACE FUNCTION fusionner_signalements()
+CREATE OR REPLACE FUNCTION fusionner_signalement()
 RETURNS TRIGGER AS $$
 BEGIN
     -- Vérifier si le secondaire est identique au principal
     IF NEW.probleme = OLD.probleme AND NEW.niveau_urgence = OLD.niveau_urgence AND NEW.date_signalement = OLD.date_signalement THEN
         -- Incrémenter le compteur du principal
-        UPDATE signalements SET compteur = compteur + NEW.compteur WHERE id = OLD.id;
+        UPDATE signalement SET compteur = compteur + NEW.compteur WHERE id = OLD.id;
         -- Supprimer le secondaire
-        DELETE FROM signalements WHERE id = NEW.id;
+        DELETE FROM signalement WHERE id = NEW.id;
     END IF;
     RETURN OLD;
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER fusionner_signalements_trigger
-AFTER UPDATE ON signalements
+CREATE TRIGGER fusionner_signalement_trigger
+AFTER UPDATE ON signalement
 FOR EACH ROW
 WHEN (NEW.principal_id IS NOT NULL)
-EXECUTE FUNCTION fusionner_signalements();
+EXECUTE FUNCTION fusionner_signalement();
 
 --Contrainte 5
-/*Cette fonction trigger mettra à jour la colonne "derniere_modification" de chaque ligne modifiée dans la table "signalements" avec la date et l'heure actuelles.*/
+/*Cette fonction trigger mettra à jour la colonne "derniere_modification" de chaque ligne modifiée dans la table "signalement" avec la date et l'heure actuelles.*/
 
 CREATE OR REPLACE FUNCTION maj_derniere_modification()
 RETURNS TRIGGER AS $$
@@ -188,14 +186,14 @@ END;
 $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER maj_signalement
-BEFORE UPDATE ON signalements
+BEFORE UPDATE ON signalement
 FOR EACH ROW
 EXECUTE FUNCTION maj_derniere_modification();
 
 --Contrainte 6
 /*Cette contrainte vérifie que l'état du signalement est soit "En cours", soit "Ancien" avec une date de modification inférieure à trois mois à partir de la date et l'heure actuelles.*/
 
-ALTER TABLE signalements ADD CONSTRAINT chk_probleme_en_cours_ou_anciens_trois_mois 
+ALTER TABLE signalement ADD CONSTRAINT chk_probleme_en_cours_ou_anciens_trois_mois 
 CHECK (etat = 'En cours' OR (etat = 'Ancien' AND date_modification >= NOW() - INTERVAL '3 months'));
 
 --Contrainte 7
@@ -234,8 +232,8 @@ BEGIN
         
     --et on insert dans la table de liaison les 2 ids
     INSERT INTO signalement_habitant (id_signalement, id_habitant) VALUES (id_sig,nb);
-END
-$$ LANGUAGE PLPGSQL
+END;
+$$ LANGUAGE PLPGSQL;
 
 -------------------INSERTION--------------------------
 
