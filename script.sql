@@ -1,4 +1,6 @@
+--Version 1.4
 ----------------------------EFFACER BASE---------------------------
+
 drop table if exists signalement_habitant;
 drop table if exists habitant;
 drop table if exists eclairage;
@@ -90,8 +92,6 @@ CREATE TABLE SIGNALEMENT_HABITANT (
 
 --Ajouter la double clé primaire pour la table
 ALTER TABLE SIGNALEMENT_HABITANT ADD CONSTRAINT PK PRIMARY KEY (id_signalement, id_habitant);
-
-
 
 /*Cette contrainte utilise une fonction plpgsql et un trigger pour incrémente le compteur du signalement originel si un nouveau signalement est identique au précédent
  * La comparaison des signalements est basée sur les valeurs des colonnes probleme, numero_maison_proche, intervalle_numero_debut, intervalle_numero_fin, description_probleme et niveau_urgence. Si les deux signalements sont identiques
