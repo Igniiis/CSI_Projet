@@ -1,7 +1,18 @@
----------------------------- CREATION DOMAINES -------------------------
+----------------------------EFFACER BASE---------------------------
 
+drop table if exists signalement_habitant;
+drop table if exists habitant;
+drop table if exists eclairage;
+drop table if exists signalement;
+drop table if exists Rue;
+drop table if exists Agent;
 
+drop domain if exists enum_etat;
+drop domain if exists enum_agent;
+drop domain if exists enum_probleme;
+drop domain if exists enum_urgence;
 
+----------------------------CREATION DOMAINES-------------------------
 CREATE DOMAIN enum_etat VARCHAR(30) NOT NULL CHECK
     (VALUE IN ('pas réalisé', 'en cours', 'réalisé'));
 
@@ -14,11 +25,7 @@ CREATE DOMAIN enum_probleme VARCHAR(30) NOT NULL CHECK
 CREATE DOMAIN enum_urgence VARCHAR(30) NOT NULL CHECK
     (VALUE IN ('faible', 'moyen', 'élevé', 'très urgent'));
 
-
-
----------------------------- CREATION TABLES -------------------------
-
-
+----------------------------CREATION TABLES------------------------
 
 CREATE TABLE Rue (
 	id_rue SERIAL PRIMARY KEY,
@@ -27,8 +34,7 @@ CREATE TABLE Rue (
 );
 
 CREATE TABLE AGENT (
-	id_agent SERIAL PRIMARY KEY,
-	login_agent VARCHAR(50) NOT NULL,
+	id_agent VARCHAR(50) NOT NULL PRIMARY KEY,
 	nom_agent VARCHAR(50) NOT NULL,
 	prenom_agent VARCHAR(50) NOT NULL,
 	mdp_agent VARCHAR(50) NOT NULL,
@@ -39,9 +45,9 @@ CREATE TABLE SIGNALEMENT (
 	id_signalement SERIAL PRIMARY KEY,
   	probleme enum_probleme NOT NULL,
   	id_rue integer references Rue(id_rue) NOT NULL,
-  	numero_maison_proche VARCHAR(10),
-  	intervalle_numero_debut VARCHAR(10),
-  	intervalle_numero_fin VARCHAR(10),
+  	numero_maison_proche integer,
+  	intervalle_numero_debut integer,
+  	intervalle_numero_fin integer,
 	description_probleme VARCHAR(500),
 	niveau_urgence enum_urgence DEFAULT 'faible',
 	date_signalement DATE DEFAULT CURRENT_DATE,
@@ -50,7 +56,7 @@ CREATE TABLE SIGNALEMENT (
 	etat enum_etat DEFAULT 'pas réalisé',
 	description_resolution VARCHAR(500),
 	date_modification DATE not null default CURRENT_DATE,
-	id_agent integer references AGENT(id_agent)
+	id_agent VARCHAR(50) references AGENT(id_agent)
 );
 
 CREATE TABLE HABITANT (
@@ -59,9 +65,9 @@ CREATE TABLE HABITANT (
 	prenom_habitant VARCHAR(50) NOT NULL,
 	id_rue integer references Rue(id_rue) NOT NULL,
 	num_adresse_habitant VARCHAR(10) NOT NULL,
-	numero_portable VARCHAR(25) NOT NULL,
+	numero_portable VARCHAR(25),
 	numero_fixe VARCHAR(25),
-	mail VARCHAR(100)
+	mail VARCHAR(100) NOT NULL
 );
 
 CREATE TABLE ECLAIRAGE (
@@ -72,16 +78,17 @@ CREATE TABLE ECLAIRAGE (
 );
 
 CREATE TABLE SIGNALEMENT_HABITANT (
-	id_signalement integer references SIGNALEMENT(id_signalement),
-	id_habitant integer references HABITANT(id_habitant)
+	id_signalement integer NOT NULL references SIGNALEMENT(id_signalement),
+	id_habitant integer NOT NULL references HABITANT(id_habitant)
 );
+
 
 
 
 ---------------------------- CREATION CONTRAINTES -------------------------
 
 
-
+--Ajouter la double clé primaire pour la table
 ALTER TABLE SIGNALEMENT_HABITANT ADD CONSTRAINT PK PRIMARY KEY (id_signalement, id_habitant);
 
 
@@ -90,26 +97,25 @@ ALTER TABLE SIGNALEMENT_HABITANT ADD CONSTRAINT PK PRIMARY KEY (id_signalement, 
  * la fonction met à jour le compteur du signalement originel et annule l'insertion du nouveau signalement*/
 CREATE OR REPLACE FUNCTION increment_compteur_signalement()
 RETURNS TRIGGER AS $$
-DECLARE 
+DECLARE
 	last_signalement INTEGER;
+    t INTEGER;
 BEGIN
-	-- On recherche le dernier signalement sur cette même rue
-	SELECT INTO last_signalement id_signalement FROM signalement 
-		WHERE id_rue = NEW.id_rue 
-		ORDER BY date_signalement DESC 
-		LIMIT 1;
+
+	SELECT count(*) INTO t FROM Signalement WHERE
+    SIGNALEMENT.probleme=NEW.probleme AND
+    SIGNALEMENT.id_rue = NEW.id_rue AND
+    SIGNALEMENT.numero_maison_proche = NEW.numero_maison_proche AND
+    SIGNALEMENT.intervalle_numero_debut = NEW.intervalle_numero_debut AND
+    SIGNALEMENT.intervalle_numero_fin = NEW.intervalle_numero_fin;
+
 
 	-- Si le dernier signalement est identique au nouveau, on incrémente le compteur
-	IF last_signalement IS NOT NULL AND 
-	   (SELECT probleme FROM signalement WHERE id_signalement = last_signalement) = NEW.probleme AND 
-	   (SELECT numero_maison_proche FROM signalement WHERE id_signalement = last_signalement) = NEW.numero_maison_proche AND 
-	   (SELECT intervalle_numero_debut FROM signalement WHERE id_signalement = last_signalement) = NEW.intervalle_numero_debut AND 
-	   (SELECT intervalle_numero_fin FROM signalement WHERE id_signalement = last_signalement) = NEW.intervalle_numero_fin AND 
-	   (SELECT description_probleme FROM signalement WHERE id_signalement = last_signalement) = NEW.description_probleme AND 
-	   (SELECT niveau_urgence FROM signalement WHERE id_signalement = last_signalement) = NEW.niveau_urgence 
+	IF (t=1)
 		THEN
-	    	UPDATE signalement 
-	    	SET compteur_signalement_total = (SELECT compteur_signalement_total FROM signalement WHERE id_signalement = last_signalement) + 1 
+	    	UPDATE signalement
+	    	SET compteur_signalement_total = (SELECT compteur_signalement_total FROM signalement WHERE id_signalement = last_signalement) + 1,
+	    	    compteur_signalement_anonyme = (SELECT compteur_signalement_total FROM signalement WHERE id_signalement = last_signalement) + NEW.compteur_signalement_anonyme
 	    	WHERE id_signalement = last_signalement;
 	    	RETURN NULL; -- On annule l'insertion du nouveau signalement
 	END IF;
@@ -123,94 +129,121 @@ CREATE TRIGGER increment_compteur_signalement_trigger
   	EXECUTE FUNCTION increment_compteur_signalement();
 
 
- /*Cette contrainte permet donc de détecter les signalements identiques dans un intervalle d'un an
-  * et d'incrémenter le niveau d'urgence du signalement original si le nombre de signalements identiques dépasse 10.*/
+
+ /*Cette contrainte permet d'incrémeter le niveau d'urgence en fonction du nombre qu'affiche le compteur.*/
  CREATE OR REPLACE FUNCTION increment_urgence() RETURNS TRIGGER AS $$
 DECLARE
-    nb_similar INTEGER;
+    nb_compteur INTEGER;
     max_id INTEGER;
 BEGIN
-    SELECT COUNT(*) INTO nb_similar FROM signalement WHERE probleme = NEW.probleme AND niveau_urgence = NEW.niveau_urgence 
-        AND description_probleme = NEW.description_probleme AND id_rue = NEW.id_rue 
-        AND numero_maison_proche = NEW.numero_maison_proche AND intervalle_numero_debut = NEW.intervalle_numero_debut 
-        AND intervalle_numero_fin = NEW.intervalle_numero_fin AND etat = 'pas réalisé' 
-        AND id_signalement != NEW.id_signalement AND date_signalement >= (CURRENT_DATE - INTERVAL '1 year');
 
-    IF nb_similar >= 9 THEN
-        SELECT MAX(id_signalement) INTO max_id FROM signalement WHERE probleme = NEW.probleme AND niveau_urgence = NEW.niveau_urgence 
-            AND description_probleme = NEW.description_probleme AND id_rue = NEW.id_rue 
-            AND numero_maison_proche = NEW.numero_maison_proche AND intervalle_numero_debut = NEW.intervalle_numero_debut 
-            AND intervalle_numero_fin = NEW.intervalle_numero_fin AND etat = 'pas réalisé' 
-            AND date_signalement >= (CURRENT_DATE - INTERVAL '1 year');
-        UPDATE signalement SET niveau_urgence = 'très urgent' WHERE id_signalement = max_id;
-    END IF;
+    --on récupère le nouveau compteur total
+    SELECT compteur_signalement_total INTO nb_compteur FROM SIGNALEMENT WHERE id_signalement=NEW.id_signalement;
+
+    --    (VALUE IN ('faible', 'moyen', 'élevé', 'très urgent'));
+    IF(nb_compteur<=9)
+    then
+        UPDATE SIGNALEMENT SET niveau_urgence='faible' WHERE SIGNALEMENT.id_signalement=NEW.id_signalement;
+    elseif (nb_compteur <= 19)
+    then
+        UPDATE SIGNALEMENT SET niveau_urgence='moyen' WHERE SIGNALEMENT.id_signalement=NEW.id_signalement;
+    elseif (nb_compteur <= 29)
+    then
+        UPDATE SIGNALEMENT SET niveau_urgence='élevé' WHERE SIGNALEMENT.id_signalement=NEW.id_signalement;
+    elseif (nb_compteur >= 30)
+    then
+        UPDATE SIGNALEMENT SET niveau_urgence='très urgent' WHERE SIGNALEMENT.id_signalement=NEW.id_signalement;
+    else
+        --erreur
+        RETURN NULL;
+    end if;
 
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER increment_urgence_trigger
-	AFTER INSERT ON signalement
+	AFTER UPDATE ON signalement
 	FOR EACH ROW
 	EXECUTE FUNCTION increment_urgence();
 
 
-/*Ce déclencheur s'exécute après chaque mise à jour de la table "signalement" où le champ "principal_id" est défini
- * Il compare le signalement mis à jour (NEW) avec celui référencé par "principal_id" (OLD) et s'il sont identiques, il incrémente le compteur du signalement principal et supprime le signalement secondaire
- * La mise à jour du signalement principal et la suppression du secondaire sont effectuées dans une transaction
- * ce qui garantit que les deux opérations réussissent ou échouent ensemble*/
-CREATE OR REPLACE FUNCTION fusionner_signalement()
-RETURNS TRIGGER AS $$
+
+/* Cette procédure permet à un utilisateur de faire fusionner 2 signalements qu'il trouve similaire*/
+CREATE OR REPLACE PROCEDURE fusion_signalement(id_disparant integer, id_recuperant integer)
+AS $$
+DECLARE
+
 BEGIN
-    -- Vérifier si le secondaire est identique au principal
-    IF NEW.probleme = OLD.probleme AND NEW.niveau_urgence = OLD.niveau_urgence AND NEW.date_signalement = OLD.date_signalement THEN
-        -- Incrémenter le compteur du principal
-        UPDATE signalement SET compteur = compteur + NEW.compteur WHERE id = OLD.id;
-        -- Supprimer le secondaire
-        DELETE FROM signalement WHERE id = NEW.id;
-    END IF;
-    RETURN OLD;
+
+    -- on rajoute au signalement récupérant les valeurs de compteur du signalement disparant
+    UPDATE SIGNALEMENT SET compteur_signalement_total=(SELECT compteur_signalement_total FROM SIGNALEMENT WHERE id_signalement=id_disparant) + (SELECT compteur_signalement_total FROM SIGNALEMENT WHERE id_signalement=id_recuperant),
+    compteur_signalement_anonyme=(SELECT compteur_signalement_anonyme FROM SIGNALEMENT WHERE id_signalement=id_disparant) + (SELECT compteur_signalement_anonyme FROM SIGNALEMENT WHERE id_signalement=id_recuperant)
+    WHERE id_signalement=id_recuperant;
+
+    -- on supprime maintenant ce signalement qui n'a plus d'utilité
+    DELETE FROM SIGNALEMENT WHERE id_signalement=id_disparant;
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER fusionner_signalement_trigger
-	AFTER UPDATE ON signalement
-	FOR EACH ROW
-	EXECUTE FUNCTION fusionner_signalement();
+
 
 
 /*Cette fonction trigger mettra à jour la colonne "derniere_modification" de chaque ligne modifiée dans la table "signalement" avec la date et l'heure actuelles.*/
-CREATE OR REPLACE FUNCTION maj_derniere_modification()
-RETURNS TRIGGER AS $$
+CREATE OR REPLACE PROCEDURE maj_derniere_modification(id_sig integer, id_a varchar(50))
+AS $$
 BEGIN
-    NEW.derniere_modification = now();
-    RETURN NEW;
+
+    UPDATE SIGNALEMENT SET date_modification = current_date,
+    id_agent = id_a WHERE id_signalement=id_sig;
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER maj_signalement
-BEFORE UPDATE ON signalement
-FOR EACH ROW
-EXECUTE FUNCTION maj_derniere_modification();
+
+/*Cette vue permet de n'afficher que les signalements qui ont moins de 3 mois (pour les habitants) .*/
+CREATE OR REPLACE VIEW signalement_3mois AS
+    SELECT * FROM SIGNALEMENT WHERE date_modification >= CURRENT_DATE - INTERVAL '3 months' ORDER BY date_modification;
 
 
-/*Cette contrainte vérifie que l'état du signalement est soit "En cours", soit "Ancien" avec une date de modification inférieure à trois mois à partir de la date et l'heure actuelles.*/
-/*ALTER TABLE signalement ADD CONSTRAINT chk_probleme_en_cours_ou_anciens_trois_mois 
-CHECK (etat = 'En cours' OR (etat = 'Ancien' AND date_modification >= NOW() - INTERVAL '3 months'));*/
+/* Cette contrainte permet d'inserer une nouvelle ligne d'éclairage, et ceux seulement si on est dans les 5 dernières minutes
+ * de l'éclairage en cours ou si il n'y a tout simplement pas d'éclairage en cours
+ * @return un nombre utilisé par le site et php pour prévenir l'habitant */
+CREATE OR REPLACE FUNCTION func_insert_eclaire(id integer) RETURNS integer
+AS $$
+DECLARE
+    t integer;
+    temps_fin timestamp;
+    temps_test timestamp;
+BEGIN
+    temps_test := CURRENT_TIMESTAMP AT TIME ZONE 'Europe/Paris';
+    --on récupère le nombre d'éclairage en cours
+    SELECT COUNT(*) INTO t FROM Eclairage WHERE Eclairage.id_rue=id AND Eclairage.date_heure_fin>(temps_test);
+
+    IF(t=0)--si il n'y a pas d'éclairage en cours ou moins de 5 minutes pour la rue donnée
+    then
+        INSERT INTO Eclairage (id_rue, date_heure_debut, date_heure_fin) VALUES (id, temps_test, (temps_test+INTERVAL '15 Minutes'));
+        return 2;
+    end if;
+
+    --on vérifie maintenant si il reste à l'éclairage en cours plus ou moins de 5 minutes
+    SELECT COUNT(*) INTO t FROM Eclairage WHERE id_rue=id AND Eclairage.date_heure_fin>(temps_test+INTERVAL'5 Minutes');
+
+    IF(t=0)--si il n'y a pas d'éclairage en cours ou moins de 5 minutes pour la rue donnée
+    then
+        --TODO
+        --insert modifiant la date pour prendre celle de fin de l'ancienne éclairage comme nouvelle date de début
+        SELECT date_heure_fin into temps_fin FROM ECLAIRAGE where id_rue=id;
+        INSERT INTO Eclairage (id_rue, date_heure_debut, date_heure_fin) VALUES (id, temps_fin, (temps_fin+INTERVAL '15 Minutes'));
+        return 1;
+    end if;
+
+    --cela signifit que l'éclairage en cours sera fini dans plus de 5 minutes donc nous ne pouvons pas insérer de un nouvelle éclairage
+    return 0;
+END;
+$$ LANGUAGE plpgsql;
 
 
-/*Cette contrainte est basée sur une vérification de la colonne demande_ts, qui stocke la date et l'heure de la demande de prolongation d'éclairage
- * La contrainte chk_demande_temps vérifie que la date et l'heure de la demande sont supérieures à la date et l'heure actuelles moins cinq minutes (soit les cinq dernières minutes)
- * Si la condition n'est pas remplie, la contrainte empêchera l'insertion de la nouvelle demande dans la table.*/
-CREATE TABLE ma_table (
-   id SERIAL PRIMARY KEY,
-   demande_ts TIMESTAMP NOT NULL,
-   -- Autres colonnes
-   CONSTRAINT chk_demande_temps CHECK (demande_ts > NOW() - INTERVAL '5 minutes')
-);
-
-
---Procedure(ne renvoie rien en sortie) pour insérer une ligne habitant+signalement_habitant
+--Procedure pour insérer une ligne habitant+signalement_habitant
 CREATE OR REPLACE PROCEDURE proc_insert_habitant_signalement
 (id_sig integer, nom_h VARCHAR(50),prenom_h VARCHAR(50),id_r integer, num_adresse_h VARCHAR(10), numero_p VARCHAR(25), numero_f VARCHAR(25), mail_h VARCHAR(100))
 AS $$
@@ -218,15 +251,15 @@ DECLARE
     nb integer;
 BEGIN
     SELECT COUNT(*) INTO nb FROM Habitant WHERE Habitant.nom_habitant=nom_h AND Habitant.prenom_habitant=prenom_h AND Habitant.mail=mail_h AND Habitant.id_rue=id_r;
-    
+
     IF(nb=0) --Si on a pas de ligne avec toutes les coordonnées identiques, cela signifit que l'on a jamais ajouté cet habitant
     THEN -- alors on insert les valeur de l'habitant en parametre
         INSERT INTO habitant (nom_habitant, prenom_habitant, id_rue, num_adresse_habitant, numero_portable, numero_fixe, mail) VALUES (nom_h, prenom_h, id_r, num_adresse_h, numero_p, numero_f, mail_h);
     END IF;
-    
+
     --on récupère l'id de l'habitant concerné
     SELECT id_habitant INTO nb FROM Habitant WHERE Habitant.nom_habitant=nom_h AND Habitant.prenom_habitant=prenom_h AND Habitant.mail=mail_h AND Habitant.id_rue=id_r;
-        
+
     --et on insert dans la table de liaison les 2 ids
     INSERT INTO signalement_habitant (id_signalement, id_habitant) VALUES (id_sig,nb);
 END;
@@ -235,31 +268,27 @@ $$ LANGUAGE PLPGSQL;
 
 
 -------------------INSERTION--------------------------
-
-
-
 INSERT INTO Rue (nom_rue, num_rue_maximum) VALUES
 	 ('rue des Miagistes', 58),
-	 ('rue de la Monnaie',12),
 	 ('rue de la Monnaie',47),
 	 ('Place André Maginot ',56),
 	 ('Place Carnot',27),
 	 ('Rue Saint Julien',70),
 	 ('Rue Sonnini ',43);
 
-INSERT INTO AGENT (login_agent, nom_agent, prenom_agent, mdp_agent, type_agent) VALUES
-	 ('guigui', 'Chartier', 'Guillaume', 'CG', 'responsable'),
-	 ('coco', 'Mayer', 'Chloé', 'MC', 'responsable'),
-	 ('mama', 'Malleret', 'Maxence', 'MM', 'responsable'),
-	 ('ag1', 'nomAgent1', 'prenomAgent2','A1', 'normal'),
-	 ('ag2', 'nomAgent2', 'prenomAgent2','A2', 'normal');
-	
+INSERT INTO AGENT (id_agent, nom_agent, prenom_agent, mdp_agent, type_agent) VALUES
+	 ('guigui', 'Chartier', 'Guillaume', 'admin', 'responsable'),
+	 ('coco', 'Mayer', 'Chloé', 'admin', 'responsable'),
+	 ('mama', 'Malleret', 'Maxence', 'admin', 'responsable'),
+	 ('ag1', 'nomAgent1', 'prenomAgent2','admin', 'normal'),
+	 ('ag2', 'nomAgent2', 'prenomAgent2','admin', 'normal');
+
 INSERT INTO HABITANT (nom_habitant, prenom_habitant, id_rue, num_adresse_habitant, numero_portable, numero_fixe, mail) VALUES
 	 ('Zadig','Géraldine',1, '21 bis', '0666666666', NULL, 'geraldine.zadig@gmail.com');
 
 
 INSERT INTO signalement (probleme, id_rue, numero_maison_proche, intervalle_numero_debut, intervalle_numero_fin, description_probleme, date_signalement) VALUES
-	 ('égout bouché', 1, NULL, '3 bis', '13', NULL, '2023-01-01');
+	 ('égout bouché', 1, NULL, 3, 13, NULL, '2023-01-01');
 
 INSERT INTO eclairage (id_rue,date_heure_debut,date_heure_fin) VALUES
 	 (1, '2023-03-23 15:00:00','2023-03-23 15:15:00');
