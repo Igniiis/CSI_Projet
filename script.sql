@@ -3,6 +3,7 @@
 drop table if exists signalement_habitant;
 drop table if exists habitant;
 drop table if exists eclairage;
+drop view if exists signalement_3mois;
 drop table if exists signalement;
 drop table if exists Rue;
 drop table if exists Agent;
