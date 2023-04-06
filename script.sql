@@ -1,4 +1,4 @@
---Version 1.4
+--Version 1.4.2
 ----------------------------EFFACER BASE---------------------------
 
 drop table if exists signalement_habitant;
@@ -100,6 +100,7 @@ CREATE OR REPLACE FUNCTION increment_compteur_signalement()
 RETURNS TRIGGER AS $$
 DECLARE
     t INTEGER;
+    nb_total integer;
 BEGIN
 
 	SELECT id_signalement INTO t FROM Signalement WHERE
@@ -113,10 +114,32 @@ BEGIN
 	-- Si le dernier signalement est identique au nouveau, on incrémente le compteur
 	IF (t IS NOT NULL)
 		THEN
+		    nb_total := (SELECT compteur_signalement_total+1 FROM signalement WHERE id_signalement = t);
+
 	    	UPDATE signalement
-	    	SET compteur_signalement_total = (SELECT compteur_signalement_total+1 FROM signalement WHERE id_signalement = t),
+	    	SET compteur_signalement_total = nb_total,
 	    	    compteur_signalement_anonyme = ((SELECT compteur_signalement_anonyme FROM signalement WHERE id_signalement = t) + NEW.compteur_signalement_anonyme)
 	    	WHERE id_signalement = t;
+
+
+		    -- partie check des valeurs compteur_total pour maj le niveau d'urgence en fonction
+		    IF(nb_total<=9)
+            then
+                UPDATE SIGNALEMENT SET niveau_urgence='faible' WHERE SIGNALEMENT.id_signalement=t;
+            elseif (nb_total <= 19)
+            then
+                UPDATE SIGNALEMENT SET niveau_urgence='moyen' WHERE SIGNALEMENT.id_signalement=t;
+            elseif (nb_total <= 29)
+            then
+                UPDATE SIGNALEMENT SET niveau_urgence='élevé' WHERE SIGNALEMENT.id_signalement=t;
+            elseif (nb_total >= 30)
+            then
+                UPDATE SIGNALEMENT SET niveau_urgence='très urgent' WHERE SIGNALEMENT.id_signalement=t;
+            else
+                --erreur
+            end if;
+
+
 	    	RETURN NULL; -- On annule l'insertion du nouveau signalement
 	END IF;
 	RETURN NEW;
