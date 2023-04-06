@@ -184,7 +184,6 @@ $$ LANGUAGE plpgsql;
 CREATE OR REPLACE VIEW signalement_3mois AS
     SELECT * FROM SIGNALEMENT WHERE date_modification >= CURRENT_DATE - INTERVAL '3 months' ORDER BY date_modification;
 
-
 /* Cette contrainte permet d'inserer une nouvelle ligne d'éclairage, et ceux seulement si on est dans les 5 dernières minutes
  * de l'éclairage en cours ou si il n'y a tout simplement pas d'éclairage en cours
  * @return un nombre utilisé par le site et php pour prévenir l'habitant */
@@ -212,7 +211,7 @@ BEGIN
     then
         --TODO
         --insert modifiant la date pour prendre celle de fin de l'ancienne éclairage comme nouvelle date de début
-        SELECT date_heure_fin into temps_fin FROM ECLAIRAGE where id_rue=id;
+        SELECT date_heure_fin into temps_fin FROM ECLAIRAGE where id_rue=id ORDER BY ECLAIRAGE.date_heure_fin DESC LIMIT 1;
         INSERT INTO Eclairage (id_rue, date_heure_debut, date_heure_fin) VALUES (id, temps_fin, (temps_fin+INTERVAL '15 Minutes'));
         return 1;
     end if;
