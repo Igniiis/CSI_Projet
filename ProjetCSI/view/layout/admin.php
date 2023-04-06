@@ -14,7 +14,7 @@
 
             <a class="clickable" href="<?php echo BASE_URL.'/admin/signalements/view' ?>" title="Signalements">Signalements</a>
             
-            <a class="clickable" href="<?php echo BASE_URL.'/admin/eclairages' ?>" title="Eclairages">Eclairages</a>
+            <a class="clickable" href="<?php echo BASE_URL.'/admin/eclairages/ask' ?>" title="Eclairages">Eclairages</a>
 
             <a class="clickable" href="<?php echo BASE_URL.'/admin/agents/logout' ?>">Deconnexion</a>
             

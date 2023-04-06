@@ -23,7 +23,9 @@ class Form {
             $html .= '<input type="text" id="input'.$name.'" name="'.$name.'" value="'.$value.'">';
         }elseif($options['type'] == 'textarea'){
             $html .= '<textarea id="input'.$name.'" name="'.$name.'" >'.$value.'</textarea>';
-        }elseif($options['type'] == 'select'){
+        }
+        
+        elseif($options['type'] == 'select'){
             $html .= '<select id="input'.$name.'" name="'.$name.'" required>';
 
             if(isset($options['options'])){
@@ -44,7 +46,12 @@ class Form {
         }elseif ($options['type'] == 'checkbox'){
             $html .= '<input type="hidden" name="'.$name.'" value="0">
             <input type="checkbox" name="'.$name.'" value="1" '.(empty($value)?'':'checked').'>';
-        }else{
+        }elseif ($options['type'] == 'number'){
+            $html .= '<input type="number" id="input'.$name.'" name="'.$name.'" value='.$value.' min="1">';
+        }elseif ($options['type'] == 'date'){
+            $html .= '<input type="date" id="input'.$name.'" name="'.$name.'" value="'.$value.'" >';
+        }
+        else{
 
         }
         

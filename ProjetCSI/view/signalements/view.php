@@ -1,7 +1,13 @@
 <div id="CorpsPage">
 
+<style>
+
+
+
+</style>
+
           <!-- HTML !-->
-    <form action="<?php echo BASE_URL.'/admin/signalements/edit'?>">
+    <form action="<?php echo BASE_URL.'/signalements/edit'?>">
         <button class="button-3">Créer un signalement</button>
     </form>
 
@@ -15,8 +21,6 @@
                 <th>date signalement</th>
                 <th>Compteur signalement</th>
                 <th>Etat du Signalement</th>
-                <th>Date dernière modification</th>
-                <th></th>
             </tr>
         </thead>
         <tbody>
@@ -39,11 +43,6 @@
                     <td><?php echo ($s->compteur_signalement_total.' ('.$s->compteur_signalement_anonyme.')'); ?></td>
 
                     <td><?php echo ($s->etat); ?></td>
-                    <td><?php echo ($s->date_modification);?></td>
-                    <td>
-                        <a href="<?php echo BASE_URL.'/admin/signalements/edit/'.$s->id_signalement; ?>">Edit</a>   
-                        <a onclick="return confirm('Voulez-vous vraiment supprimer le signalement n°<?php echo $s->id_signalement;?>')" href="<?php echo BASE_URL.'/admin/signalements/delete/'.$s->id_signalement; ?>">Suppr</a>
-                    </td>
                 </tr>
             <?php endforeach;?>
         </tbody>

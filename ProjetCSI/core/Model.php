@@ -75,6 +75,14 @@ class Model {
             }
         }
 
+        if(isset($req['conditions_plus'])){
+            $sql .= $req['conditions_plus'];
+        }
+
+        if(isset($req['order by'])){
+            $sql .= ' ORDER BY '.$req['order by'];
+        }
+
         $pre = $this->db->prepare($sql);
         $pre->execute();
         return $pre->fetchAll(PDO::FETCH_OBJ);
@@ -112,6 +120,9 @@ class Model {
         }
 
         foreach ($data as $k => $v) {
+            if($v==''){
+                $v=null;
+            }
             $d[":$k"] = $v;
 
             $f[] = $k;

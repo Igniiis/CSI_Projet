@@ -1,9 +1,16 @@
 <div id="CorpsPage">
 
+<style>
+
+
+
+</style>
+
           <!-- HTML !-->
-    <form action="<?php echo BASE_URL.'/admin/signalements/edit'?>">
-        <button class="button-3">Créer un signalement</button>
-    </form>
+
+    <h1>Fusionner un signalement</h1>
+    <p><u>Notes:</u> le signalement sélectionné sera supprimé 
+    et ses statistiques seront ajoutées à celles du signalement n°<?php echo $id; ?>.</p>
 
     <table class="styled-table">
         <thead >
@@ -40,11 +47,10 @@
 
                     <td><?php echo ($s->etat); ?></td>
                     <td><?php echo ($s->date_modification);?></td>
-                    <td>
-                        <a href="<?php echo BASE_URL.'/admin/signalements/edit/'.$s->id_signalement; ?>">Edit</a>   
-                        <a onclick="return confirm('Voulez-vous vraiment supprimer le signalement n°<?php echo $s->id_signalement;?>')" href="<?php echo BASE_URL.'/admin/signalements/delete/'.$s->id_signalement; ?>">Suppr</a>
+                    <td>  
+                        <a onclick="return confirm('En choisissant ce signalement n°<?php echo $s->id_signalement;?> il sera supprimer des données, êtes-vous sûr ?')" href="<?php echo BASE_URL.'/admin/signalements/merge/'.$id.'/'.$s->id_signalement; ?>">Fusionner</a>
                     </td>
-                </tr>
+                </tr>  
             <?php endforeach;?>
         </tbody>
     </table>

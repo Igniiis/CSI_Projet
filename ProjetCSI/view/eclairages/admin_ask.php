@@ -2,7 +2,8 @@
 <link rel="stylesheet" href="<?php echo BASE_URL;?>/css/stat.css" />
 <h2>Faire une demande d'éclairage</h2>
 
-<form action="<?php echo BASE_URL.'/eclairages'.$id ;?>" method="post">
+
+<form action="<?php echo BASE_URL.'/admin/eclairages/ask/'.$id ;?>" method="post">
     <label for="id_rue">Rue :</label>
     <select id="selectRue" name="id_rue" required>
         <?php foreach($rues as $r): ?>

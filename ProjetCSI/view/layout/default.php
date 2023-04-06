@@ -12,8 +12,8 @@
         <div class="topnav">
             <a class="clickable" href="<?php echo BASE_URL.'/accueil' ?>" title="Accueil">Accueil</a>
                     
-            <a class="clickable" href="<?php echo BASE_URL.'/signalements' ?>" title="Signalements">Signalements</a>
-            <a class="clickable" href="<?php echo BASE_URL.'/eclairages' ?>" title="Eclairages">Eclairages</a>
+            <a class="clickable" href="<?php echo BASE_URL.'/signalements/view' ?>" title="Signalements">Signalements</a>
+            <a class="clickable" href="<?php echo BASE_URL.'/eclairages/ask' ?>" title="Eclairages">Eclairages</a>
 
     
             <a class="clickable" href="<?php echo BASE_URL.'/agents/login'?>" title="Connexion">Connexion</a>    
