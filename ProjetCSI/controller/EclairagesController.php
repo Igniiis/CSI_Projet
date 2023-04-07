@@ -41,6 +41,12 @@ class EclairagesController extends Controller{
         }
         $d['rues'] = $this->Rue->find(array());
 
+        if($this->isAdmin()){
+            $d['administrateurMode'] = true;
+
+            $d['eclairages'] = $this->Eclairage->find(array());
+        }
+
         $this->set($d);
     }
 
@@ -75,11 +81,11 @@ class EclairagesController extends Controller{
                 break;
             case 1:
                 //rajoute 15 minutes après l'éclairage actuel
-                $this->Session->setFlash("Les lumières de cette rue sont allumé pour les 15 prochaines minutes");
+                $this->Session->setFlash("Nous avons rajouter 15 minutes d'éclairage dans cette rue");
                 break;
             case 2:
                 //allume la lumière directement
-                $this->Session->setFlash("Nous avons rajouter 15 minutes d'éclairage dans cette rue");
+                $this->Session->setFlash("Les lumières de cette rue sont allumé pour les 15 prochaines minutes");
                 break;
             default:
                 # code...

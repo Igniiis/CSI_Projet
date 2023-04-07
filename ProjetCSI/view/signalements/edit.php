@@ -1,6 +1,7 @@
 <link rel="stylesheet" href="<?php echo BASE_URL;?>/css/form.css" />
 
 <div id="formulaire_CreerSignalement" class="formulaire">
+
 			<h2>Créer un signalement</h2><br>
 			<form action="<?php echo BASE_URL.'/signalements/edit';?>" method="post">
 				<label for="probleme">Problème *:</label>
@@ -69,7 +70,7 @@
 						<label for="num_adresse_habitant">Adresse :</label>
 						
 						<label for="num_h">numéro *</label>
-						<input id="num_h" type="text" name="num_adresse_habitant" value="">
+						<input id="num_h" type="text" name="num_adresse_habitant" value="" >
 						<label for="id_rue_habitant">Rue *:</label>
 						<select id="selectRue" name="id_rue_habitant" required>
 							<?php foreach($rues as $r): ?>
